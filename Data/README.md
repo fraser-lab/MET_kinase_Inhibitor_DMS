@@ -1,4 +1,4 @@
-## This folder contains all the primary fitness analysis code and figures plots 
+## This folder contains all the primary fitness analysis code and figure plots 
    
 ## Primary analysis:
 -  Met_Inhibitor_V1.Rmd
