@@ -146,8 +146,8 @@ Read in the Met DMS outputs
 variantCounts_colnames <- c("count", "pos", "chunk_pos", "chunk", "mutation_type", "name", "codon", "variants", "length", "hgvs")
 variantCounts_cotypes = "_iiiicccccc"
 
-met_scores_file = "../data/Enrich2/Met_gejf02/tsv/MET_gejf02_config_exp/main_identifiers_scores.tsv"
-met_ex_scores_file = "../data/Enrich2/Met_Ex_gejf02/tsv/MET_Ex_gejf02_config_exp/main_identifiers_scores.tsv"
+met_scores_file = "../main_identifiers_scores.tsv"
+met_ex_scores_file = "../main_identifiers_scores.tsv"
 
 met_variantscore_colnames <- c("hgvs", "A458_SE", "A458_epsilon", "A458_score",
                                "Cabo_SE", "Cabo_epsilon", "Cabo_score",
