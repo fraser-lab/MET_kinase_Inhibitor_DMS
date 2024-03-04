@@ -1,0 +1,836 @@
+---
+title: "Met second round DMS analysis"
+output: html_notebook
+---
+
+```{r}
+library(ggplot2)
+library(gglorenz)
+library(readr)
+library(stringr)
+library(tidyverse)
+library(dplyr)
+library(ggridges)
+library(tidyquant)
+library(bio3d)
+library(corrplot)
+source("dms_analysis_utilities.R")
+
+library(scales)
+library(colorspace)
+library(ggpubr)
+library(rstatix)
+```
+Function for plotting heatmaps
+```{r}
+
+print_heatmap <- function(df, label, low, high, output_file) {
+  
+  label <- enquo(label)
+  
+  order <- c('X','H', 'K', 'R', 'D', 'E',
+            'C','M','N','Q','S','T','A','I','L','V','W','F',
+            'Y','G','P')
+  
+  variant_names <- c('Stop','H', 'K', 'R', 'D', 'E',
+            'C','M','N','Q','S','T','A','I','L','V','W','F',
+            'Y','G','P')
+  
+  met_wt_1 = str_split(substr(met_wt_sequence, 1, 100), '')[[1]]
+  met_wt_2 = str_split(substr(met_wt_sequence, 101, 200), '')[[1]]
+  met_wt_3 = str_split(substr(met_wt_sequence, 201, 287), '')[[1]]
+  
+  row1 = ggplot(data = df %>% mutate(pos = pos - 1058) %>% filter(pos %in% c(1:100)), 
+                        aes(x = pos, y = factor(variants, level = order, labels = variant_names), fill = !!label )) +
+    geom_tile(aes(color = as.factor(is.wt)), size = 0.2) +
+    scale_fill_continuous_divergingx(palette = 'RdBu', mid = 0,l1=0.2, l3 = 0.2, p1=0.9, p3 = .4, p4 = 0.9,rev=FALSE, na.value = 'lightyellow',limits=c(low,high)) + 
+    scale_color_manual(values = c(NA,'green')) +
+    scale_x_continuous(breaks = seq(0, 100, by = 5),
+                       expand = c(0,0),
+                       sec.axis = sec_axis(
+                        trans = ~.,
+                        name = "Sequence",
+                        breaks = seq(1, 100),
+                        labels = met_wt_1,
+                        guide = derive()
+                      )) +
+    coord_fixed(ratio = 1) +
+    theme(
+      panel.background = element_rect(fill = "white",
+                                      colour = "white",
+                                      size = 0.5, linetype = "solid"),
+      panel.grid.major = element_blank(), 
+      panel.grid.minor = element_blank(),
+      axis.text.x = element_text(angle = 90, hjust = 1, size = 6),
+      axis.text.y = element_text(size = 4),
+      axis.text = element_text(size = 4),
+      axis.text.x.top = element_text(angle = 0, hjust = 0.5, family = "mono"),
+      axis.ticks = element_blank(),
+      legend.position="none"
+    ) +
+    labs(y = "Mutation", x = "Position")
+  
+  row2 = ggplot(data = df %>% mutate(pos = pos - 1058) %>% filter(pos %in% c(101:200)), 
+                        aes(x = pos, y = factor(variants, level = order, labels = variant_names), fill = !!label )) +
+    geom_tile(aes(color = as.factor(is.wt)), size = 0.2) +
+    scale_fill_continuous_divergingx(palette = 'RdBu', mid = 0,l1=0.2, l3 = 0.2, p1=0.9, p3 = .4, p4 = 0.9,rev=FALSE, na.value = 'lightyellow',limits=c(low,high)) + 
+    scale_color_manual(values = c(NA,'green')) +
+    scale_x_continuous(breaks = seq(101, 200, by = 5),
+                       expand = c(0,0),
+                       sec.axis = sec_axis(
+                        trans = ~.,
+                        name = "Sequence",
+                        breaks = seq(101, 200),
+                        labels = met_wt_2,
+                        guide = derive()
+                      )) +
+    coord_fixed(ratio = 1) +
+    theme(
+      panel.background = element_rect(fill = "white",
+                                      colour = "white",
+                                      size = 0.5, linetype = "solid"),
+      panel.grid.major = element_blank(), 
+      panel.grid.minor = element_blank(),
+      axis.text.x = element_text(angle = 90, hjust = 1, size = 6),
+      axis.text.y = element_text(size = 4),
+      axis.text = element_text(size = 4),
+      axis.text.x.top = element_text(angle = 0, hjust = 0.5, family = "mono"),
+      axis.ticks = element_blank(),
+      legend.position="none"
+    ) +
+    labs(y = "Mutation", x = "Position")
+  
+  row3 = ggplot(data = df %>% mutate(pos = pos - 1058) %>% filter(pos %in% c(201:287)), 
+                        aes(x = pos, y = factor(variants, level = order, labels = variant_names), fill = !!label )) +
+    geom_tile(aes(color = as.factor(is.wt)), size = 0.2) +
+    scale_fill_continuous_divergingx(palette = 'RdBu', mid = 0,l1=0.2, l3 = 0.2, p1=0.9, p3 = .4, p4 = 0.9,rev=FALSE, na.value = 'lightyellow',limits=c(low,high)) + 
+    scale_color_manual(values = c(NA,'green')) +
+    scale_x_continuous(breaks = seq(201, 287, by = 5),
+                       expand = c(0,0),
+                       sec.axis = sec_axis(
+                        trans = ~.,
+                        name = "Sequence",
+                        breaks = seq(201, 287),
+                        labels = met_wt_3,
+                        guide = derive()
+                      )) +
+    coord_fixed(ratio = 1) +
+    theme(
+      panel.background = element_rect(fill = "white",
+                                      colour = "white",
+                                      size = 0.5, linetype = "solid"),
+      panel.grid.major = element_blank(), 
+      panel.grid.minor = element_blank(),
+      axis.text.x = element_text(angle = 90, hjust = 1, size = 6),
+      axis.text.y = element_text(size = 4),
+      axis.text = element_text(size = 4),
+      axis.text.x.top = element_text(angle = 0, hjust = 0.5, family = "mono"),
+      axis.ticks = element_blank(),
+      legend.position="none"
+    ) +
+    labs(y = "Mutation", x = "Position")
+  
+  heatmap = ggarrange(row1, row2, row3,
+                          nrow = 3, ncol = 1)
+  
+  ggsave(output_file, height = 7, width = 8.5, heatmap)
+  
+}
+
+```
+
+Read in the Met DMS outputs
+
+```{r}
+
+variantCounts_colnames <- c("count", "pos", "chunk_pos", "chunk", "mutation_type", "name", "codon", "variants", "length", "hgvs")
+variantCounts_cotypes = "_iiiicccccc"
+
+met_scores_file = "../data/Enrich2/Met_gejf02/tsv/MET_gejf02_config_exp/main_identifiers_scores.tsv"
+met_ex_scores_file = "../data/Enrich2/Met_Ex_gejf02/tsv/MET_Ex_gejf02_config_exp/main_identifiers_scores.tsv"
+
+met_variantscore_colnames <- c("hgvs", "A458_SE", "A458_epsilon", "A458_score",
+                               "Cabo_SE", "Cabo_epsilon", "Cabo_score",
+                               "Camp_SE", "Camp_epsilon", "Camp_score",
+                               "Crizo_SE", "Crizo_epsilon", "Crizo_score",
+                               "DMSO_SE", "DMSO_epsilon", "DMSO_score",
+                               "Gle_SE", "Gle_epsilon", "Gle_score",
+                               "Glu_SE", "Glu_epsilon", "Glu_score",
+                               "Mere_SE", "Mere_epsilon", "Mere_score",
+                               "NVP_SE", "NVP_epsilon", "NVP_score",
+                               "Savo_SE", "Savo_epsilon", "Savo_score",
+                               "Tepo_SE", "Tepo_epsilon", "Tepo_score",
+                               "Tiv_SE", "Tiv_epsilon", "Tiv_score")
+
+met_scores <- read_delim(met_scores_file, col_names = met_variantscore_colnames, skip=3)
+met_scores <- process_hgvs_df(met_scores)
+met_scores$is.wt = met_scores$mutation_type == "S"
+
+# Make this a long df rather than wide
+
+met_scores_long <- met_scores %>% 
+  pivot_longer(cols = ends_with("_score"), names_to="condition", names_pattern = "(.*)_score", values_to = "score") %>%
+  select(hgvs, pos, len, mutation_type, variants, score, condition)
+
+met_wt_fasta = "Met_wt.fasta"
+
+met_wt_fasta_con=file(met_wt_fasta, open="r")
+met_wt_sequence = readLines(met_wt_fasta_con)[2]
+close(met_wt_fasta_con)
+
+# Adjust position to correspond with actual numbering
+met_scores <- met_scores %>% mutate(pos = pos+1058)
+
+# Read in Econ 14 data
+met_ex_scores <- read_delim(met_ex_scores_file, col_names = met_variantscore_colnames, skip=3)
+met_ex_scores <- process_hgvs_df(met_ex_scores)
+met_ex_scores$is.wt = met_ex_scores$mutation_type == "S"
+
+# Make this a long df rather than wide
+
+met_ex_scores_long <- met_ex_scores %>% 
+  pivot_longer(cols = ends_with("_score"), names_to="condition", names_pattern = "(.*)_score", values_to = "score") %>%
+  select(hgvs, pos, len, mutation_type, variants, score, condition)
+
+met_ex_scores<-met_ex_scores %>% mutate(pos = pos+1058)
+
+```
+
+
+Plot average, variance DFEs for setting limits for structure mapping
+
+```{r}
+plot <- ggplot(met_avg_scores) +
+  geom_density(aes(x = avg_IL3), bw = "nrd", kernel='gaussian', size=1) +
+  xlab("Average Enrich2 score") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1)
+
+ggsave("Plots/Met_IL3_avg_DFE.pdf", height = 4, width = 5)
+ggsave("Plots/Met_IL3_avg_DFE.png", height = 4, width = 5)
+
+plot <- ggplot(met_avg_scores) +
+  geom_density(aes(x = avg_IL3_withdrawal), bw = "nrd", kernel='gaussian', size=1) +
+  xlab("Average Enrich2 score") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1)
+
+ggsave("Plots/Met_IL3_withdrawal_avg_DFE.pdf", height = 4, width = 5)
+ggsave("Plots/Met_IL3_withdrawal_avg_DFE.png", height = 4, width = 5)
+
+plot <- ggplot(met_var_scores) +
+  geom_density(aes(x = var_IL3), bw = "nrd", kernel='gaussian', size=1) +
+  xlab("Average Enrich2 score") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1)
+
+ggsave("Plots/Met_IL3_var_DFE.pdf", height = 4, width = 5)
+ggsave("Plots/Met_IL3_var_DFE.png", height = 4, width = 5)
+
+plot <- ggplot(met_var_scores) +
+  geom_density(aes(x = var_IL3_withdrawal), bw = "nrd", kernel='gaussian', size=1) +
+  xlab("Average Enrich2 score") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1)
+
+ggsave("Plots/Met_IL3_withdrawal_var_DFE.pdf", height = 4, width = 5)
+ggsave("Plots/Met_IL3_withdrawal_var_DFE.png", height = 4, width = 5)
+```
+
+Plot DFEs: kernel smoothing
+
+```{r}
+plot <- ggplot(met_scores %>% filter(mutation_type != "X")) +
+  geom_density(aes(x = DMSO_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1) +
+  xlab("Enrich2 score (DMSO)") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1) +
+  labs(color = "Mutation type")
+plot(plot)
+
+ggsave("Plots/Met/Met_DMSO_DFE.pdf", height = 4, width = 5)
+
+plot <- ggplot(met_scores %>% filter(mutation_type != "X")) +
+  geom_density(aes(x = A458_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1) +
+  xlab("Enrich2 score (A458)") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1) +
+  labs(color = "Mutation type")
+
+ggsave("Plots/Met/Met_A458_DFE.pdf", height = 4, width = 5)
+
+plot <- ggplot(met_scores %>% filter(mutation_type != "X")) +
+  geom_density(aes(x = Camp_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1) +
+  xlab("Enrich2 score (Camp)") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1) +
+  labs(color = "Mutation type")
+
+ggsave("Plots/Met/Met_Camp_DFE.pdf", height = 4, width = 5)
+
+plot <- ggplot(met_scores %>% filter(mutation_type != "X")) +
+  geom_density(aes(x = Cabo_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1) +
+  xlab("Enrich2 score (Cabo)") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1) +
+  labs(color = "Mutation type")
+
+ggsave("Plots/Met/Met_Cabo_DFE.pdf", height = 4, width = 5)
+
+plot <- ggplot(met_scores %>% filter(mutation_type != "X")) +
+  geom_density(aes(x = Crizo_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1) +
+  xlab("Enrich2 score (Crizo)") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1) +
+  labs(color = "Mutation type")
+
+ggsave("Plots/Met/Met_Crizo_DFE.pdf", height = 4, width = 5)
+
+plot <- ggplot(met_scores %>% filter(mutation_type != "X")) +
+  geom_density(aes(x = Gle_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1) +
+  xlab("Enrich2 score (Gle)") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1) +
+  labs(color = "Mutation type")
+
+ggsave("Plots/Met/Met_Gle_DFE.pdf", height = 4, width = 5)
+
+plot <- ggplot(met_scores %>% filter(mutation_type != "X")) +
+  geom_density(aes(x = Glu_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1) +
+  xlab("Enrich2 score (Glu)") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1) +
+  labs(color = "Mutation type")
+
+ggsave("Plots/Met/Met_Glu_DFE.pdf", height = 4, width = 5)
+
+plot <- ggplot(met_scores %>% filter(mutation_type != "X")) +
+  geom_density(aes(x = Mere_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1) +
+  xlab("Enrich2 score (Mere)") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1) +
+  labs(color = "Mutation type")
+
+ggsave("Plots/Met/Met_Mere_DFE.pdf", height = 4, width = 5)
+
+plot <- ggplot(met_scores %>% filter(mutation_type != "X")) +
+  geom_density(aes(x = NVP_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1) +
+  xlab("Enrich2 score (NVP)") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1) +
+  labs(color = "Mutation type")
+
+ggsave("Plots/Met/Met_NVP_DFE.pdf", height = 4, width = 5)
+
+plot <- ggplot(met_scores %>% filter(mutation_type != "X")) +
+  geom_density(aes(x = Savo_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1) +
+  xlab("Enrich2 score (Savo)") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1) +
+  labs(color = "Mutation type")
+
+ggsave("Plots/Met/Met_Savo_DFE.pdf", height = 4, width = 5)
+
+plot <- ggplot(met_scores %>% filter(mutation_type != "X")) +
+  geom_density(aes(x = Tepo_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1) +
+  xlab("Enrich2 score (Tepo)") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1) +
+  labs(color = "Mutation type")
+
+ggsave("Plots/Met/Met_Tepo_DFE.pdf", height = 4, width = 5)
+
+plot <- ggplot(met_scores %>% filter(mutation_type != "X")) +
+  geom_density(aes(x = Tiv_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1) +
+  xlab("Enrich2 score (Tiv)") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1) +
+  labs(color = "Mutation type")
+
+ggsave("Plots/Met/Met_Tiv_DFE.pdf", height = 4, width = 5)
+```
+
+Scatterplots DMSO vs Drug
+
+```{r}
+plot1 <- ggplot(met_scores %>% filter(mutation_type != "X")) +
+  geom_point(aes(x = DMSO_score, y = Cabo_score), alpha=0.3) + 
+  xlab("DMSO") + 
+  ylab("Cabo") + 
+  coord_fixed(ratio = 1) +
+  theme_classic() 
+
+plot2 <- ggplot(met_scores %>% filter(mutation_type != "X")) +
+  geom_point(aes(x = DMSO_score, y = Camp_score), alpha=0.3) + 
+  xlab("DMSO") + 
+  ylab("Camp") + 
+  coord_fixed(ratio = 1) +
+  theme_classic() 
+
+plot3 <- ggplot(met_scores %>% filter(mutation_type != "X")) +
+  geom_point(aes(x = DMSO_score, y = Crizo_score), alpha=0.3) + 
+  xlab("DMSO") + 
+  ylab("Crizo") + 
+  coord_fixed(ratio = 1) +
+  theme_classic() 
+
+plot4 <- ggplot(met_scores %>% filter(mutation_type != "X")) +
+  geom_point(aes(x = DMSO_score, y = Gle_score), alpha=0.3) + 
+  xlab("DMSO") + 
+  ylab("Gle") + 
+  coord_fixed(ratio = 1) +
+  theme_classic() 
+
+plot5 <- ggplot(met_scores %>% filter(mutation_type != "X")) +
+  geom_point(aes(x = DMSO_score, y = Glu_score), alpha=0.3) + 
+  xlab("DMSO") + 
+  ylab("Glu") + 
+  coord_fixed(ratio = 1) +
+  theme_classic() 
+
+plot6 <- ggplot(met_scores %>% filter(mutation_type != "X")) +
+  geom_point(aes(x = DMSO_score, y = Mere_score), alpha=0.3) + 
+  xlab("DMSO") + 
+  ylab("Mere") + 
+  coord_fixed(ratio = 1) +
+  theme_classic() 
+
+plot7 <- ggplot(met_scores %>% filter(mutation_type != "X")) +
+  geom_point(aes(x = DMSO_score, y = NVP_score), alpha=0.3) + 
+  xlab("DMSO") + 
+  ylab("NVP") + 
+  coord_fixed(ratio = 1) +
+  theme_classic() 
+
+plot8 <- ggplot(met_scores %>% filter(mutation_type != "X")) +
+  geom_point(aes(x = DMSO_score, y = Savo_score), alpha=0.3) + 
+  xlab("DMSO") + 
+  ylab("Savo") + 
+  coord_fixed(ratio = 1) +
+  theme_classic() 
+
+plot9 <- ggplot(met_scores %>% filter(mutation_type != "X")) +
+  geom_point(aes(x = DMSO_score, y = Tepo_score), alpha=0.3) + 
+  xlab("DMSO") + 
+  ylab("Tepo") + 
+  coord_fixed(ratio = 1) +
+  theme_classic() 
+
+plot10 <- ggplot(met_scores %>% filter(mutation_type != "X")) +
+  geom_point(aes(x = DMSO_score, y = Tiv_score), alpha=0.3) + 
+  xlab("DMSO") + 
+  ylab("Tiv") + 
+  coord_fixed(ratio = 1) +
+  theme_classic() 
+
+scatterplots = ggarrange(plot1, plot2, plot3,
+                         plot4, plot5, plot6,
+                         plot7, plot8, plot9,
+                         plot10,
+                        nrow = 3, ncol = 4)
+plot(scatterplots)
+
+ggsave("Plots/Met/Met_full_vs_DMSO.pdf", height = 7, width = 8.5, scatterplots)
+
+```
+
+Scatterplots DMSO vs Drug, stops
+
+```{r}
+plot1 <- ggplot(met_scores %>% filter(mutation_type == "N")) +
+  geom_point(aes(x = DMSO_score, y = Cabo_score), alpha=0.3) + 
+  xlab("DMSO") + 
+  ylab("Cabo") + 
+  coord_fixed(ratio = 1) +
+  theme_classic() 
+
+plot2 <- ggplot(met_scores %>% filter(mutation_type == "N")) +
+  geom_point(aes(x = DMSO_score, y = Camp_score), alpha=0.3) + 
+  xlab("DMSO") + 
+  ylab("Camp") + 
+  coord_fixed(ratio = 1) +
+  theme_classic() 
+
+plot3 <- ggplot(met_scores %>% filter(mutation_type == "N")) +
+  geom_point(aes(x = DMSO_score, y = Crizo_score), alpha=0.3) + 
+  xlab("DMSO") + 
+  ylab("Crizo") + 
+  coord_fixed(ratio = 1) +
+  theme_classic() 
+
+plot4 <- ggplot(met_scores %>% filter(mutation_type == "N")) +
+  geom_point(aes(x = DMSO_score, y = Gle_score), alpha=0.3) + 
+  xlab("DMSO") + 
+  ylab("Gle") + 
+  coord_fixed(ratio = 1) +
+  theme_classic() 
+
+plot5 <- ggplot(met_scores %>% filter(mutation_type == "N")) +
+  geom_point(aes(x = DMSO_score, y = Glu_score), alpha=0.3) + 
+  xlab("DMSO") + 
+  ylab("Glu") + 
+  coord_fixed(ratio = 1) +
+  theme_classic() 
+
+plot6 <- ggplot(met_scores %>% filter(mutation_type == "N")) +
+  geom_point(aes(x = DMSO_score, y = Mere_score), alpha=0.3) + 
+  xlab("DMSO") + 
+  ylab("Mere") + 
+  coord_fixed(ratio = 1) +
+  theme_classic() 
+
+plot7 <- ggplot(met_scores %>% filter(mutation_type == "N")) +
+  geom_point(aes(x = DMSO_score, y = NVP_score), alpha=0.3) + 
+  xlab("DMSO") + 
+  ylab("NVP") + 
+  coord_fixed(ratio = 1) +
+  theme_classic() 
+
+plot8 <- ggplot(met_scores %>% filter(mutation_type == "N")) +
+  geom_point(aes(x = DMSO_score, y = Savo_score), alpha=0.3) + 
+  xlab("DMSO") + 
+  ylab("Savo") + 
+  coord_fixed(ratio = 1) +
+  theme_classic() 
+
+plot9 <- ggplot(met_scores %>% filter(mutation_type == "N")) +
+  geom_point(aes(x = DMSO_score, y = Tepo_score), alpha=0.3) + 
+  xlab("DMSO") + 
+  ylab("Tepo") + 
+  coord_fixed(ratio = 1) +
+  theme_classic() 
+
+plot10 <- ggplot(met_scores %>% filter(mutation_type == "N")) +
+  geom_point(aes(x = DMSO_score, y = Tiv_score), alpha=0.3) + 
+  xlab("DMSO") + 
+  ylab("Tiv") + 
+  coord_fixed(ratio = 1) +
+  theme_classic() 
+
+scatterplots = ggarrange(plot1, plot2, plot3,
+                         plot4, plot5, plot6,
+                         plot7, plot8, plot9,
+                         plot10,
+                        nrow = 3, ncol = 4)
+print(scatterplots)
+
+ggsave("Plots/Met/Met_full_vs_DMSO_stops.pdf", height = 7, width = 8.5, scatterplots)
+
+```
+Plot exon 14
+
+```{r}
+plot <- ggplot(met_ex_scores %>% filter(mutation_type != "X")) +
+  geom_density(aes(x = DMSO_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1) +
+  geom_density(data = met_scores, aes(x = DMSO_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1, linetype='dashed') +
+  xlab("Enrich2 score (DMSO)") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1) +
+  labs(color = "Mutation type")
+
+ggsave("Plots/Met/Met_Ex_DMSO_DFE.pdf", height = 4, width = 6)
+
+plot <- ggplot(met_ex_scores %>% filter(mutation_type != "X")) +
+  geom_density(aes(x = A458_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1) +
+  geom_density(data = met_scores, aes(x = A458_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1, linetype='dashed') +
+  xlab("Enrich2 score (A458)") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1) +
+  labs(color = "Mutation type")
+
+ggsave("Plots/Met/Met_Ex_A458_DFE.pdf", height = 4, width = 6)
+
+plot <- ggplot(met_ex_scores %>% filter(mutation_type != "X")) +
+  geom_density(aes(x = Camp_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1) +
+  geom_density(data = met_scores, aes(x = Camp_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1, linetype='dashed') +
+  xlab("Enrich2 score (Camp)") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1) +
+  labs(color = "Mutation type")
+
+ggsave("Plots/Met/Met_Ex_Camp_DFE.pdf", height = 4, width = 6)
+
+plot <- ggplot(met_ex_scores %>% filter(mutation_type != "X")) +
+  geom_density(aes(x = Cabo_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1) +
+  geom_density(data = met_scores, aes(x = Cabo_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1, linetype='dashed') +
+  xlab("Enrich2 score (Cabo)") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1) +
+  labs(color = "Mutation type")
+
+ggsave("Plots/Met/Met_Ex_Cabo_DFE.pdf", height = 4, width = 6)
+
+plot <- ggplot(met_ex_scores %>% filter(mutation_type != "X")) +
+  geom_density(aes(x = Crizo_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1) +
+  geom_density(data = met_scores, aes(x = Crizo_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1, linetype='dashed') +
+  xlab("Enrich2 score (Crizo)") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1) +
+  labs(color = "Mutation type")
+
+ggsave("Plots/Met/Met_Ex_Crizo_DFE.pdf", height = 4, width = 6)
+
+plot <- ggplot(met_ex_scores %>% filter(mutation_type != "X")) +
+  geom_density(aes(x = Gle_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1) +
+  geom_density(data = met_scores, aes(x = Gle_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1, linetype='dashed') +
+  xlab("Enrich2 score (Gle)") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1) +
+  labs(color = "Mutation type")
+
+ggsave("Plots/Met/Met_Ex_Gle_DFE.pdf", height = 4, width = 6)
+
+plot <- ggplot(met_ex_scores %>% filter(mutation_type != "X")) +
+  geom_density(aes(x = Glu_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1) +
+  geom_density(data = met_scores, aes(x = Glu_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1, linetype='dashed') +
+xlab("Enrich2 score (Glu)") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1) +
+  labs(color = "Mutation type")
+
+ggsave("Plots/Met/Met_Ex_Glu_DFE.pdf", height = 4, width = 6)
+
+plot <- ggplot(met_ex_scores %>% filter(mutation_type != "X")) +
+  geom_density(aes(x = Mere_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1) +
+  geom_density(data = met_scores, aes(x = Mere_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1, linetype='dashed') +
+  xlab("Enrich2 score (Mere)") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1) +
+  labs(color = "Mutation type")
+
+ggsave("Plots/Met/Met_Ex_Mere_DFE.pdf", height = 4, width = 6)
+
+plot <- ggplot(met_ex_scores %>% filter(mutation_type != "X")) +
+  geom_density(aes(x = NVP_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1) +
+  geom_density(data = met_scores, aes(x = NVP_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1, linetype='dashed') +
+  xlab("Enrich2 score (NVP)") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1) +
+  labs(color = "Mutation type")
+
+ggsave("Plots/Met/Met_Ex_NVP_DFE.pdf", height = 4, width = 6)
+
+plot <- ggplot(met_ex_scores %>% filter(mutation_type != "X")) +
+  geom_density(aes(x = Savo_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1) +
+  geom_density(data = met_scores, aes(x = Savo_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1, linetype='dashed') +
+  xlab("Enrich2 score (Savo)") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1) +
+  labs(color = "Mutation type")
+
+ggsave("Plots/Met/Met_Ex_Savo_DFE.pdf", height = 4, width = 6)
+
+plot <- ggplot(met_ex_scores %>% filter(mutation_type != "X")) +
+  geom_density(aes(x = Tepo_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1) +
+  geom_density(data = met_scores, aes(x = Tepo_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1, linetype='dashed') +
+  xlab("Enrich2 score (Tepo)") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1) +
+  labs(color = "Mutation type")
+
+ggsave("Plots/Met/Met_Ex_Tepo_DFE.pdf", height = 4, width = 6)
+
+plot <- ggplot(met_ex_scores %>% filter(mutation_type != "X")) +
+  geom_density(aes(x = Tiv_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1) +
+  geom_density(data = met_scores, aes(x = Tiv_score, color=factor(mutation_type, level=c("M", "S", "N"))), bw = "nrd", kernel='gaussian', size=1, linetype='dashed') +
+  xlab("Enrich2 score (Tiv)") + 
+  ylab("Density") + 
+  geom_vline(xintercept = 0, linetype="dotted") +
+  theme_classic() + 
+  scale_color_manual(values=cbp1) +
+  labs(color = "Mutation type")
+
+ggsave("Plots/Met/Met_Ex_Tiv_DFE.pdf", height = 4, width = 6)
+```
+
+
+
+
+
+
+```{r}
+met_4XMO <- read.pdb("4XMO")
+
+x = map_scores_pdb(met_4XMO, met_avg_scores, "avg_IL3")
+write.pdb(x, file="4XMO_avg_IL3.pdb")
+x = map_scores_pdb(met_4XMO, met_avg_scores, "avg_IL3_withdrawal")
+write.pdb(x, file="4XMO_avg_IL3_withdrawal.pdb")
+# Write variance PDBs
+x = map_scores_pdb(met_4XMO, met_var_scores, "var_IL3", selection = chainsA)
+write.pdb(x, file="4XMO_var_IL3.pdb")
+x = map_scores_pdb(met_4XMO, met_var_scores, "var_IL3_withdrawal", selection = chainsA)
+write.pdb(x, file="4XMO_var_IL3_withdrawal.pdb")
+# Write max PDBs
+x = map_scores_pdb(met_4XMO, met_max_scores, "max_IL3", selection = chainsA)
+write.pdb(x, file="4XMO_max_IL3.pdb")
+x = map_scores_pdb(met_4XMO, met_max_scores, "max_IL3_withdrawal", selection = chainsA)
+write.pdb(x, file="4XMO_max_IL3_withdrawal.pdb")
+
+met_crizo <- data.frame(hgvs=met_scores$hgvs, 
+                   met_crizo_SE = met_scores$Crizo_SE,
+                   met_crizo_score =met_scores$Crizo_score,
+                   mutation_type=met_scores$mutation_type,
+                   pos=met_scores$pos, 
+                   variants=met_scores$variants)
+
+met_crizo <- met_crizo %>% filter (mutation_type != "N" & mutation_type != "S")
+met_crizo_avg_scores <- met_crizo %>% group_by(pos) %>% summarise(met_crizo_avg_score = mean(met_crizo_score, na.rm=TRUE),
+                                                                  met_crizo_avg_SE = mean(met_crizo_SE, na.rm=TRUE))
+met_2WGJ_criz <- read.pdb("2WGJ")
+x = map_scores_pdb(met_2WGJ_criz, met_crizo_avg_scores, "met_crizo_avg_score")
+write.pdb(x, file="met_2WGJ_criz.pdb")
+
+
+met_DMSO <- data.frame(hgvs=met_scores$hgvs, 
+                   met_DMSO_SE = met_scores$DMSO_SE,
+                   met_DMSO_score =met_scores$DMSO_score,
+                   mutation_type=met_scores$mutation_type,
+                   pos=met_scores$pos, 
+                   variants=met_scores$variants)
+
+met_DMSO <- met_DMSO %>% filter (mutation_type != "N" & mutation_type != "S")
+met_DMSO_avg_scores <- met_DMSO %>% group_by(pos) %>% summarise(met_DMSO_avg_score = mean(met_DMSO_score, na.rm=TRUE),
+                                                                  met_DMSO_avg_SE = mean(met_DMSO_SE, na.rm=TRUE))
+met_2WGJ_DMSO <- read.pdb("2WGJ")
+x = map_scores_pdb(met_2WGJ_DMSO, met_DMSO_avg_scores, "met_DMSO_avg_score")
+write.pdb(x, file="met_2WGJ_DMSO.pdb")
+
+
+met_criz_delta_dmso <- merge(met_crizo, met_DMSO)
+met_criz_delta_dmso$score_diff <- (met_criz_delta_dmso$met_crizo_score) - (met_criz_delta_dmso$met_DMSO_score)
+met_criz_delta_dmso <- met_criz_delta_dmso %>% filter (mutation_type != "N" & mutation_type != "S"  & mutation_type != "X")
+met_criz_delta_dmso_avg_scores <- met_criz_delta_dmso %>% group_by(pos) %>% summarise(criz_dmso_delta = mean(score_diff, na.rm=TRUE))
+met_2WGJ_criz_delta<- read.pdb("2WGJ")
+x = map_scores_pdb(met_2WGJ_criz_delta, met_criz_delta_dmso_avg_scores, "criz_dmso_delta")
+write.pdb(x, file="met_2WGJ_criz_delta.pdb")
+
+```
+
+Try PCA
+
+```{r}
+met_IL3_wide <- met_scores %>%
+  filter(mutation_type == 'M') %>%
+  pivot_wider(id_cols = pos, values_from = IL3_score, names_from = variants) %>%
+  replace(is.na(.), 0)
+
+met_IL3_wide <- met_IL3_wide %>%
+  arrange(pos) %>%
+  remove_rownames() %>% 
+  column_to_rownames(var = "pos")
+
+met_IL3_withdrawal_wide <- met_scores %>%
+  filter(mutation_type == 'M') %>%
+  pivot_wider(id_cols = pos, values_from = IL3_withdrawal_score, names_from = variants) %>%
+  replace(is.na(.), 0)
+
+met_IL3_withdrawal_wide <- met_IL3_withdrawal_wide %>%
+  arrange(pos) %>%
+  remove_rownames() %>% 
+  column_to_rownames(var = "pos")
+
+# Plots
+
+met_IL3.pr <- met_IL3_wide %>% prcomp(center = FALSE, scale = TRUE)
+
+plot(met_IL3.pr)
+biplot(met_IL3.pr, choices=c(1,2))
+biplot(met_IL3.pr, choices=c(2,3))
+
+corrplot(cor(met_IL3_wide), type = "upper", order = "AOE", 
+         tl.col = "black", tl.srt = 45)
+
+met_IL3_withdrawal.pr <- met_IL3_withdrawal_wide %>% prcomp(center = FALSE, scale = TRUE)
+plot(met_IL3_withdrawal.pr)
+biplot(met_IL3_withdrawal.pr, choices=c(1,2))
+biplot(met_IL3_withdrawal.pr, choices=c(2,3))
+summary(met_IL3_withdrawal.pr)
+
+corrplot(cor(met_IL3_withdrawal_wide), type = "upper", order = "AOE", 
+         tl.col = "black", tl.srt = 45)
+
+```
+
+```{r}
+
+print_heatmap(met_scores, DMSO_score, -13, 3, "Plots/Met_DMSO_heatmap.pdf")
+print_heatmap(met_scores, A458_score, -13, 4, "Plots/Met_A458_heatmap.pdf")
+print_heatmap(met_scores, Camp_score, -13, 5, "Plots/Met_Camp_heatmap.pdf")
+print_heatmap(met_scores, Cabo_score, -14, 6, "Plots/Met_Cabo_heatmap.pdf")
+print_heatmap(met_scores, Crizo_score, -14, 6, "Plots/Met_Crizo_heatmap.pdf")
+print_heatmap(met_scores, Gle_score, -13, 8, "Plots/Met_Gle_heatmap.pdf")
+print_heatmap(met_scores, Glu_score, -14, 3, "Plots/Met_Glu_heatmap.pdf")
+print_heatmap(met_scores, Mere_score, -12, 5, "Plots/Met_Mere_heatmap.pdf")
+print_heatmap(met_scores, NVP_score, -14, 4, "Plots/Met_NVP_heatmap.pdf")
+print_heatmap(met_scores, Savo_score, -14, 6, "Plots/Met_Savo_heatmap.pdf")
+print_heatmap(met_scores, Tepo_score, -15, 5, "Plots/Met_Tepo_heatmap.pdf")
+print_heatmap(met_scores, Tiv_score, -13, 6, "Plots/Met_Tiv_heatmap.pdf")
+
+print_heatmap(met_ex_scores, DMSO_score, -13, 2, "Plots/Ex14_DMSO_heatmap.pdf")
+print_heatmap(met_ex_scores, A458_score, -12, 5, "Plots/Ex14_A458_heatmap.pdf")
+print_heatmap(met_ex_scores, Camp_score, -12, 3, "Plots/Ex14_Camp_heatmap.pdf")
+print_heatmap(met_ex_scores, Cabo_score, -12, 3, "Plots/Ex14_Cabo_heatmap.pdf")
+print_heatmap(met_ex_scores, Crizo_score, -12, 4, "Plots/Ex14_Crizo_heatmap.pdf")
+print_heatmap(met_ex_scores, Gle_score, -12, 5, "Plots/Ex14_Gle_heatmap.pdf")
+print_heatmap(met_ex_scores, Glu_score, -12, 3, "Plots/Ex14_Glu_heatmap.pdf")
+print_heatmap(met_ex_scores, Mere_score, -12, 8, "Plots/Ex14_Mere_heatmap.pdf")
+print_heatmap(met_ex_scores, NVP_score, -14, 5, "Plots/Ex14_NVP_heatmap.pdf")
+print_heatmap(met_ex_scores, Savo_score, -12, 2, "Plots/Ex14_Savo_heatmap.pdf")
+print_heatmap(met_ex_scores, Tepo_score, -16, 3, "Plots/Ex14_Tepo_heatmap.pdf")
+print_heatmap(met_ex_scores, Tiv_score, -13, 3, "Plots/Ex14_Tiv_heatmap.pdf")
+
+```
