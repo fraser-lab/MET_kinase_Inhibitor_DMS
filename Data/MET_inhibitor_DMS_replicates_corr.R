@@ -8,7 +8,6 @@ library(dplyr)
 library(ggplot2)
 library(gridExtra)
 
-
 ########################################################################################################
 #---------------------------------------- Replicate validation  ---------------------------------------#
 
@@ -22,9 +21,9 @@ ex14_plots_list <- list()
 
 # MET replicates
 for (condition in condition_names) {
-  rep1 <- as.data.frame(fread(paste0("/Users/gabriellaestevam/Met_DMS_Inhibitors-main_V1/data/Enrich2/Met_Ex_gejf02/tsv/", condition, "_R1_sel/main_identifiers_scores.tsv")))
-  rep2 <- as.data.frame(fread(paste0("/Users/gabriellaestevam/Met_DMS_Inhibitors-main_V1/data/Enrich2/Met_Ex_gejf02/tsv/", condition, "_R2_sel/main_identifiers_scores.tsv")))
-  rep3 <- as.data.frame(fread(paste0("/Users/gabriellaestevam/Met_DMS_Inhibitors-main_V1/data/Enrich2/Met_Ex_gejf02/tsv/", condition, "_R3_sel/main_identifiers_scores.tsv")))
+  rep1 <- as.data.frame(fread(paste0("pathname", condition, "_R1_sel/main_identifiers_scores.tsv")))
+  rep2 <- as.data.frame(fread(paste0("pathname", condition, "_R2_sel/main_identifiers_scores.tsv")))
+  rep3 <- as.data.frame(fread(paste0("pathname", condition, "_R3_sel/main_identifiers_scores.tsv")))
   
   rep1_df <- data.frame(hgvs = rep1$hgvs, R1 = rep1$score)
   rep1_df <- merge(rep1_df, ex14_inhib_scores)
@@ -83,11 +82,11 @@ dev.off()
 
 met_del_ex14_plots_list <- list()
 
-# MET replicates
+# MET del Ex14 replicates
 for (condition in condition_names) {
-  rep1 <- as.data.frame(fread(paste0("/Users/gabriellaestevam/Met_DMS_Inhibitors-main_V1/data/Enrich2/Met_gejf02/tsv/", condition, "_R1_sel/main_identifiers_scores.tsv")))
-  rep2 <- as.data.frame(fread(paste0("/Users/gabriellaestevam/Met_DMS_Inhibitors-main_V1/data/Enrich2/Met_gejf02/tsv/", condition, "_R2_sel/main_identifiers_scores.tsv")))
-  rep3 <- as.data.frame(fread(paste0("/Users/gabriellaestevam/Met_DMS_Inhibitors-main_V1/data/Enrich2/Met_gejf02/tsv/", condition, "_R3_sel/main_identifiers_scores.tsv")))
+  rep1 <- as.data.frame(fread(paste0("pathname", condition, "_R1_sel/main_identifiers_scores.tsv")))
+  rep2 <- as.data.frame(fread(paste0("pathname", condition, "_R2_sel/main_identifiers_scores.tsv")))
+  rep3 <- as.data.frame(fread(paste0("pathname", condition, "_R3_sel/main_identifiers_scores.tsv")))
   
   rep1_df <- data.frame(hgvs = rep1$hgvs, R1 = rep1$score)
   rep1_df <- merge(rep1_df, met_inhib_scores)
