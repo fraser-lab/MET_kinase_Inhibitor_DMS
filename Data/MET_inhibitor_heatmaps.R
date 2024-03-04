@@ -1,5 +1,6 @@
 # MET_inhibitor_heatmaps.R
 # code to generate alll the inhibitor heatmaps from the normalized roscae scores 
+# by g.estevam @ ucsf
 
 
 library(ggplot2)
