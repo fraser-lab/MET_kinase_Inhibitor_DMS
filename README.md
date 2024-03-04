@@ -1,2 +1,7 @@
-# MET_kinase_Inhibitor_DMS
-Source code for the MET kinase domain inhibitor DMS
+# Resistance landscape of the MET kinase domain 
+
+## Source code for the MET kinase domain inhibitor DMS.
+## please cite: 
+## doi: 
+
+
