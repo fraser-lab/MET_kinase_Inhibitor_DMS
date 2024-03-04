@@ -55,9 +55,6 @@ require(data.table)
 #ex14_inhib_scores = ex14_inhib_scores %>% filter(mutation_type != "X")
 #met_inhib_scores  = met_inhib_scores %>% filter(mutation_type != "X")
 
-#write.csv(ex14_inhib_scores, "/Users/gabriellaestevam/Met_DMS_Inhibitors-main_V1/Plotting/ex14_inhib_scores.csv", row.names=FALSE)
-#write.csv(met_inhib_scores, "/Users/gabriellaestevam/Met_DMS_Inhibitors-main_V1/Plotting/met_inhib_scores.csv", row.names=FALSE)
-
 
 ##################### Enrich2 scores #####################
 ### open data file as data frame for all raw inhibitor scores generated from ENRICH2 
