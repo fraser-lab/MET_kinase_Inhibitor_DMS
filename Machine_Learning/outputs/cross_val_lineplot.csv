@@ -1,0 +1,3 @@
+Features,Train correlation,Validation correlation,Test correlation
+ESM,0.283715287,0.263326155,0.250684217
+Best model,0.415288138,0.307278646,0.323395213
