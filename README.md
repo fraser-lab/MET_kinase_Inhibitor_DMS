@@ -6,7 +6,7 @@
 #### doi: 
 
 #### Analysis code used in the manuscript found in the "Data" folder 
-#### Machine learning code and alysis can be found in the "Machine Learning" folder 
+#### Machine learning code and analysis can be found in the "Machine Learning" folder 
 
 
 
