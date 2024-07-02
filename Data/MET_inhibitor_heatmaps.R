@@ -81,18 +81,14 @@ met_rosace_scores_crizo <- met_rosace_scores_condensed  %>% filter(inhib == "Cri
 
 
 
-# Assuming met_rosace_norm_scores_filtered is your primary data frame
-# Check the number of rows in each vector
+# check the number of rows in each vector
 n_rows_primary <- nrow(met_rosace_norm_scores_filtered)
 
-# Assuming met_rosace_norm_scores is the secondary data frame
-# Check the number of rows in the secondary data frame
 n_rows_secondary <- nrow(met_rosace_norm_scores)
 
-# Identify the minimum number of rows between the two data frames
 min_rows <- min(n_rows_primary, n_rows_secondary)
 
-# Select the first min_rows rows from each vector in met_rosace_norm_scores_filtered
+# select the first min_rows rows from each vector in met_rosace_norm_scores_filtered
 met_rosace_scores_condensed <- data.frame(
   hgvs = met_rosace_norm_scores_filtered$variants[1:min_rows],
   pos = met_rosace_norm_scores_filtered$position[1:min_rows],
@@ -105,7 +101,7 @@ met_rosace_scores_condensed <- data.frame(
   mean = met_rosace_norm_scores$mean[1:min_rows]
 )
 
-# Print the number of rows in the resulting data frame
+# print the number of rows in the resulting data frame
 cat("Number of rows in met_rosace_scores_condensed: ", nrow(met_rosace_scores_condensed), "\n")
 
 
