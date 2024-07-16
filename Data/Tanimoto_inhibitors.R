@@ -29,8 +29,6 @@ library(ChemmineR)
 library(ChemmineOB)
 
 
-
-# Define the SMILES strings and their corresponding variable names
 smiles_list <- list(
   Crizotinib = "CC(C1=C(C=CC(=C1Cl)F)Cl)OC2=C(N=CC(=C2)C3=CN(N=C3)C4CCNCC4)N",
   Cabozantinib = "COC1=CC2=C(C=CN=C2C=C1OC)OC3=CC=C(C=C3)NC(=O)C4(CC4)C(=O)NC5=CC=C(C=C5)F",
@@ -62,7 +60,6 @@ compound_names <- c(
   "Savolitinib"
 )
 
-# Compute Tanimoto distances for all pairs of SMILES
 n <- length(smiles_list)
 distance_matrix <- matrix(0, n, n)
 
@@ -75,15 +72,11 @@ for (i in 1:(n - 1)) {
   }
 }
 
-# Print the distance matrix
+
 print(distance_matrix)
 
 
 
-
-
-
-# Define SMILES strings
 smiles_list <- c(
   "CC(C1=C(C=CC(=C1Cl)F)Cl)OC2=C(N=CC(=C2)C3=CN(N=C3)C4CCNCC4)N",
   "COC1=CC2=C(C=CN=C2C=C1OC)OC3=CC=C(C=C3)NC(=O)C4(CC4)C(=O)NC5=CC=C(C=C5)F",
@@ -98,13 +91,11 @@ smiles_list <- c(
   "CC(C1=CN2C=CN=C2C=C1)N3C4=NC(=CN=C4N=N3)C5=CN(N=C5)"
 )
 
-# Create CDK Molecule objects from SMILES
-molecules <- lapply(smiles_list, function(smiles) parse.smiles(smiles))
 
-# Calculate Tanimoto similarity matrix
+molecules <- lapply(smiles_list, function(smiles) parse.smiles(smiles))
+                    
 similarity_matrix <- Tanimoto(molecules)
 
-# Print the similarity matrix
 print(similarity_matrix)
 
 
@@ -112,37 +103,35 @@ print(similarity_matrix)
 
 
 #----------------------- heatmap -------------------------------# 
-# Define the desired order of compounds
+
 desired_order <- c("Crizotinib", "Capmatinib", "Tepotinib", "Glumetinib", "Savolitinib", "NVPBVU972", "Tivantinib", "Cabozantinib", "Merestinib", "Glesatinib", "AMG458")
 
-# Reorder the rows and columns of distance_matrix based on the desired order
+
 distance_matrix_ordered <- distance_matrix[match(desired_order, rownames(distance_matrix)), match(desired_order, colnames(distance_matrix))]
 
 heatmap_data <- expand.grid(x = names(smiles_list), y = names(smiles_list))
 heatmap_data$Distance <- as.vector(distance_matrix)
 
-# Create a data frame for the heatmap labels
+
 heatmap_data_ordered <- heatmap_data[heatmap_data$x %in% desired_order & heatmap_data$y %in% desired_order, ]
 
-# Convert the x and y variables to factors with the desired order
 heatmap_data_ordered$x <- factor(heatmap_data_ordered$x, levels = desired_order)
 heatmap_data_ordered$y <- factor(heatmap_data_ordered$y, levels = desired_order)
 
-# Create the heatmap using ggplot2 with the reordered data and labels
 ggplot(heatmap_data_ordered, aes(x = x, y = y, fill = Distance, label = round(Distance, 2))) +
   geom_tile() +
   scale_fill_distiller(palette = "Blues", type = "seq", direction = 1, na.value = "lightyellow", name = "Distance") +
-  geom_text(color = "black", size = 3) +  # Set text color to black
+  geom_text(color = "black", size = 3) +  # set text color to black
   labs(title = "Tanimoto Distance Heatmap",
        x = "Compounds", y = "Compounds") +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels
-  scale_color_distiller(palette = "Blues", type = "seq") +  # Color text labels
-  guides(fill = guide_colorbar(title = "Distance"), color = FALSE)  # Hide color legend
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # rotate x-axis labels
+  scale_color_distiller(palette = "Blues", type = "seq") +  # color text labels
+  guides(fill = guide_colorbar(title = "Distance"), color = FALSE)  # hide color legend
 
 ######
 
-# Compute Tanimoto distances for all pairs of SMILES using ChemmineR
+# Tanimoto distances for all pairs of SMILES 
 n <- length(smiles_list)
 distance_matrix <- matrix(0, n, n)
 
@@ -156,21 +145,14 @@ for (i in 1:(n - 1)) {
   }
 }
 
-# Print the Tanimoto distance matrix
 print(distance_matrix)
 
-
-
-
-# Install required package if not installed
+                    
 if (!requireNamespace("webchem", quietly = TRUE)) {
   install.packages("webchem")
 }
 
-# Load required library
 library(webchem)
-
-# Function to generate 2D structure plot from SMILES using Cheminformatics
 get_2d_structure <- function(smiles, name) {
   csid <- webchem::get_csid_structure(smiles, fileformat = "png")
   plot_path <- paste0(name, "_structure.png")
@@ -178,7 +160,7 @@ get_2d_structure <- function(smiles, name) {
   print(plot_path)
 }
 
-# Apply the function to each SMILES string
+
 for (name in names(smiles_list)) {
   get_2d_structure(smiles_list[[name]], name)
 }
